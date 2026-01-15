@@ -7,8 +7,11 @@ client.on("ready", () => {
   console.log("Stoat Bot Online");
 });
 
-client.on("message", async (msg) => {
-  if (msg.author.bot) return;
+// message → messageCreate に修正
+client.on("messageCreate", async (msg) => {
+  if (!msg.content) return;
+  if (msg.author?.bot) return;
+
   if (msg.content === "!ping") {
     await msg.reply("pong");
   }

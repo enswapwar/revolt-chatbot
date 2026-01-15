@@ -1,8 +1,39 @@
 const { Client } = require("revolt.js");
 const http = require("http");
+const fetch = require("node-fetch");
 
 const client = new Client();
 const chatgptUsers = new Map();
+
+// ChatGPT 呼び出し（確認用デバッグ）
+async function askChatGPT(text) {
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are ChatGPT injected into a Stoat bot." },
+        { role: "user", content: text }
+      ]
+    })
+  });
+
+  const data = await res.json();
+
+  // OpenAIレスポンス確認用
+  console.log("OpenAI status:", res.status);
+  console.log("OpenAI response:", JSON.stringify(data, null, 2));
+
+  if (!data.choices || !data.choices[0]) {
+    throw new Error("No choices in OpenAI response");
+  }
+
+  return data.choices[0].message.content;
+}
 
 client.on("ready", () => {
   console.log("Stoat Bot Online");
@@ -14,6 +45,12 @@ client.on("messageCreate", async (msg) => {
 
   const userId = msg.author._id;
   const text = msg.content.trim();
+
+  // ping pong（最優先）
+  if (text === "!ping") {
+    await msg.reply("pong");
+    return;
+  }
 
   // ChatGPT開始
   if (text === "!mikan chatgpt start") {
@@ -29,20 +66,21 @@ client.on("messageCreate", async (msg) => {
     return;
   }
 
-  // 会話対象ユーザーのみ処理
+  // 会話対象ユーザーのみ
   if (!chatgptUsers.has(userId)) return;
 
   try {
     const reply = await askChatGPT(text);
     await msg.reply(reply);
   } catch (e) {
-    await msg.reply("ChatGPT エラー");
+    console.error("ChatGPT error:", e);
+    await msg.reply("ChatGPT エラー（ログ確認）");
   }
 });
 
 client.loginBot(process.env.BOT_TOKEN);
 
-// ダミーHTTP
+// Render用ダミーHTTP
 http.createServer((req, res) => {
   res.writeHead(200);
   res.end("alive");

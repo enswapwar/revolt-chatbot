@@ -1,11 +1,10 @@
 const { Client } = require("revolt.js");
 const http = require("http");
-const fetch = require("node-fetch");
 
 const client = new Client();
 const chatgptUsers = new Map();
 
-// ChatGPT 呼び出し（確認用デバッグ）
+// ChatGPT 呼び出し（Node.js v22 の標準 fetch 使用）
 async function askChatGPT(text) {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -24,7 +23,6 @@ async function askChatGPT(text) {
 
   const data = await res.json();
 
-  // OpenAIレスポンス確認用
   console.log("OpenAI status:", res.status);
   console.log("OpenAI response:", JSON.stringify(data, null, 2));
 
@@ -46,27 +44,24 @@ client.on("messageCreate", async (msg) => {
   const userId = msg.author._id;
   const text = msg.content.trim();
 
-  // ping pong（最優先）
+  // ping pong
   if (text === "!ping") {
     await msg.reply("pong");
     return;
   }
 
-  // ChatGPT開始
   if (text === "!mikan chatgpt start") {
     chatgptUsers.set(userId, true);
     await msg.reply("ChatGPT 接続開始");
     return;
   }
 
-  // ChatGPT停止
   if (text === "!mikan chatgpt stop") {
     chatgptUsers.delete(userId);
     await msg.reply("ChatGPT 接続終了");
     return;
   }
 
-  // 会話対象ユーザーのみ
   if (!chatgptUsers.has(userId)) return;
 
   try {
@@ -80,7 +75,7 @@ client.on("messageCreate", async (msg) => {
 
 client.loginBot(process.env.BOT_TOKEN);
 
-// Render用ダミーHTTP
+// ダミーHTTP
 http.createServer((req, res) => {
   res.writeHead(200);
   res.end("alive");

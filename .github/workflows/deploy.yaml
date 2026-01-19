@@ -1,2 +1,15 @@
-- run: |
-    echo "HOOK=$RENDER_DEPLOY_HOOK"
+name: Auto Restart Render (15min)
+
+on:
+  schedule:
+    - cron: "*/15 * * * *" # 15分ごと
+  workflow_dispatch:       # 手動実行も可
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Render Deploy Hook
+        run: curl -X POST "$RENDER_DEPLOY_HOOK"
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}

@@ -9,7 +9,43 @@ client.on("ready", () => {
 
 async function askChatGPT(text) {
   console.log("[DEBUG] askChatGPT input:", text);
-  return `ChatGPT Echo: ${text}`;
+
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is missing");
+  }
+
+  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4.1-mini",
+      messages: [
+        { role: "system", content: "You are ChatGPT injected into a Stoat bot." },
+        { role: "user", content: text }
+      ]
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("[DEBUG] OpenAI HTTP Error:", res.status, errText);
+    throw new Error("OpenAI request failed");
+  }
+
+  const data = await res.json();
+  console.log("[DEBUG] OpenAI raw response:", data);
+
+  return data.choices?.[0]?.message?.content ?? "no response";
+}
+
+
+  const data = await res.json();
+  console.log("[DEBUG] OpenAI raw response:", data);
+
+  return data.choices?.[0]?.message?.content ?? "no response";
 }
 
 client.on("messageCreate", async (msg) => {

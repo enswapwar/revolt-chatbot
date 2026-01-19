@@ -17,3 +17,5 @@ jobs:
         env:
           # GitHub Secrets に登録した Render の Deploy Hook URL
           RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          - run: |
+    echo "HOOK=$RENDER_DEPLOY_HOOK"

@@ -99,7 +99,7 @@ client.on("messageCreate", async (msg) => {
     return;
   }
 
-  if (text.startsWith("!mikan chatgpt ")) {
+  if (text.startsWith("!chatgpt ")) {
     const prompt = text.slice("!chatgpt ".length).trim();
     if (!prompt) {
       await msg.reply("メッセージが空です。!chatgptのあとに質問内容を入力してください。");

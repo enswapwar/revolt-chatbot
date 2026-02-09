@@ -100,9 +100,9 @@ client.on("messageCreate", async (msg) => {
   }
 
   if (text.startsWith("!mikan chatgpt ")) {
-    const prompt = text.slice("!mikan chatgpt ".length).trim();
+    const prompt = text.slice("!chatgpt ".length).trim();
     if (!prompt) {
-      await msg.reply("your text is empty.");
+      await msg.reply("メッセージが空です。!chatgptのあとに質問内容を入力してください。");
       return;
     }
 
@@ -110,7 +110,7 @@ client.on("messageCreate", async (msg) => {
       const reply = await askChatGPT(prompt);
       await msg.reply(reply);
     } catch {
-      await msg.reply("ChatGPT connecting error");
+      await msg.reply("ChatGPTに接続できませんでした。もう一度試してください");
     }
   }
 });

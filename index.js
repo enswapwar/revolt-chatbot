@@ -1,5 +1,6 @@
 const { Client } = require("revolt.js");
 const http = require("http");
+const fetch = require("node-fetch");
 
 const client = new Client();
 

@@ -20,7 +20,7 @@ async function askChatGPT(text) {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "gpt-4.1-nano",
         messages: [
           { role: "system", content: "あなたはStoat.chatで動くbotです。何でも屋としてやってください。また、ときにはおちゃめに振る舞って、自由気ままにしてください" },
           { role: "user", content: text }

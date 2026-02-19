@@ -9,31 +9,39 @@ client.on("ready", () => {
 });
 
 async function askChatGPT(text) {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is missing");
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      return "OPENAI_API_KEY が見つかりません。EnvironmentでKeyとValueの確認を行ってから再起動してください。";
+    }
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        messages: [
+          { role: "system", content: "あなたはStoat.chatで動くbotです。何でも屋としてやってください。また、ときにはおちゃめに振る舞って、自由気ままにしてください" },
+          { role: "user", content: text }
+        ]
+      })
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      console.log("OpenAI に エラーが生じました。時間が経てば治る可能性があるのでお待ち下さい:", t);
+      return "OpenAI API error";
+    }
+
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? "no response";
+
+  } catch (err) {
+    console.log("ChatGPT が クラッシュしました。時間が経てば治る可能性があるのでお待ち下さい:", err);
+    return "ChatGPT internal error";
   }
-
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: "gpt-4.1-mini",
-      messages: [
-        { role: "system", content: "You are ChatGPT injected into a Stoat bot." },
-        { role: "user", content: text }
-      ]
-    })
-  });
-
-  if (!res.ok) {
-    throw new Error("OpenAI request failed");
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content ?? "no response";
 }
 
 function rollDice(input) {
@@ -84,7 +92,6 @@ client.on("messageCreate", async (msg) => {
     return;
   }
 
-  // ダイスロール
   if (text.startsWith("!dice") || text.startsWith("!roll")) {
     const arg = text.split(" ")[1];
     const result = rollDice(arg);
@@ -103,16 +110,12 @@ client.on("messageCreate", async (msg) => {
   if (text.startsWith("!chatgpt ")) {
     const prompt = text.slice("!chatgpt ".length).trim();
     if (!prompt) {
-      await msg.reply("メッセージが空です。!chatgptのあとに質問内容を入力してください。");
+      await msg.reply("メッセージが空です。");
       return;
     }
 
-    try {
-      const reply = await askChatGPT(prompt);
-      await msg.reply(reply);
-    } catch {
-      await msg.reply("ChatGPTに接続できませんでした。もう一度試してください");
-    }
+    const reply = await askChatGPT(prompt);
+    await msg.reply(reply);
   }
 });
 

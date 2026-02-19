@@ -1,6 +1,6 @@
 const { Client } = require("revolt.js");
+require("dotenv").config();
 const http = require("http");
-const fetch = require("node-fetch");
 
 const client = new Client();
 

@@ -1,5 +1,4 @@
 const { Client } = require("revolt.js");
-require("dotenv").config();
 const http = require("http");
 
 const client = new Client();
